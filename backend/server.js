@@ -30,6 +30,7 @@ app.use(express.static(path.join(__dirname, "..", "frontend")));
 // 2. توجيه الصفحة الرئيسية لملف index.html
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
+});
   // مسار مباشر للوحة التحكم
 app.get("/admin", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "frontend", "admin", "admin.html"));
