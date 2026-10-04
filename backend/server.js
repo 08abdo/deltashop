@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
@@ -29,5 +30,5 @@ app.use(express.static(path.join(__dirname)));
 
 // 2. توجيه الصفحة الرئيسية لملف index.html
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend"));
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
