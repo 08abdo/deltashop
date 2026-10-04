@@ -22,3 +22,12 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+const path = require("path");
+
+// 1. تفعيل مجلد الملفات الثابتة (HTML, CSS, JS, Images)
+app.use(express.static(path.join(__dirname)));
+
+// 2. توجيه الصفحة الرئيسية لملف index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend"));
+});
