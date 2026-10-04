@@ -25,9 +25,9 @@ app.listen(PORT, () => {
 const path = require("path");
 
 // 1. تفعيل مجلد الملفات الثابتة (HTML, CSS, JS, Images)
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, "..", "frontend")));
 
 // 2. توجيه الصفحة الرئيسية لملف index.html
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "index.html"));
+  res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
 });
