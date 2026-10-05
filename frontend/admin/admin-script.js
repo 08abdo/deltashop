@@ -1,7 +1,7 @@
 const API_URL = "/api";
 
 // 🔑 رمز الدخول الخاص بك (تقدر تبدلو هنا)
-const ADMIN_PASSWORD = "1234";
+const ADMIN_PASSWORD = "oubaid040808oubaid";
 
 let uploadedImages = [];
 let allProducts = [];
