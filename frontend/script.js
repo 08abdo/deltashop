@@ -177,7 +177,7 @@ function renderProducts(items) {
     const title = product.name || "منتج بدون اسم";
     const desc = product.desc_text || product.description || "";
     const oldPriceDisplay = product.old_price
-      ? `<del class="old-price">$${product.old_price}</del>`
+      ? `<del class="old-price">${product.old_price} دج</del>`
       : "";
 
     const card = document.createElement("div");
@@ -193,7 +193,7 @@ function renderProducts(items) {
         </div>
         <div class="card-footer-row">
           <div class="price-container">
-            <span class="price-tag">$${product.price}</span>
+            <span class="price-tag">${product.price} دج</span>
             ${oldPriceDisplay}
           </div>
           <div class="card-actions">
@@ -226,7 +226,7 @@ function openProductModal(id) {
   document.getElementById("modal-title").textContent = p.name;
   document.getElementById("modal-desc").textContent =
     p.desc_text || p.description || "";
-  document.getElementById("modal-price").textContent = `$${p.price}`;
+  document.getElementById("modal-price").textContent = `${p.price} دج`;
   document.getElementById("modal-img").src = mainImg;
 
   const colorWrapper = document.getElementById("colors-wrapper");
@@ -394,7 +394,7 @@ function updateCartUI() {
   }
 
   if (cartTotalEl) {
-    cartTotalEl.innerText = `$${totalPrice.toFixed(2)}`;
+    cartTotalEl.innerText = `${totalPrice.toFixed(2)} دج`;
   }
 
   if (cart.length === 0) {
@@ -416,7 +416,7 @@ function updateCartUI() {
         <img src="${item.img}" class="cart-item-img">
         <div>
           <strong class="cart-item-name">${item.name}</strong>
-          <br><small class="text-subtle">$${item.price} × ${item.qty}${sizeText}</small>
+          <br><small class="text-subtle">${item.price} دج × ${item.qty}${sizeText}</small>
         </div>
       </div>
       <button onclick="removeFromCart(${idx})" class="btn-icon delete-btn" title="حذف">
