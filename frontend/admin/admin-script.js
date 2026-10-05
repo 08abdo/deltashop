@@ -524,7 +524,7 @@ async function renderAdminOrders() {
       <td>${o.customer_name || o.customer || ""}</td>
       <td>${o.phone || ""}</td>
       <td>${o.address || ""}</td>
-      <td><strong>$${o.total || 0}</strong></td>
+      <td><strong>${o.total || 0} دج</strong></td>
       <td><span class="status-badge ${statusClass}">${o.status || "قيد الانتظار"}</span></td>
       <td>
         <div class="action-btns">
@@ -609,7 +609,7 @@ async function updateStats() {
     return acc + (profit || 0);
   }, 0);
 
-  if (statSales) statSales.innerText = `$${totalProfit.toFixed(2)}`;
+  if (statSales) statSales.innerText = `${totalProfit.toFixed(2)} دج`;
 }
 
 async function loadDashboardData() {
