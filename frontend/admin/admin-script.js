@@ -452,7 +452,7 @@ async function renderAdminProducts() {
     const mainImg =
       p.images && p.images.length > 0 ? p.images[0].src : "image/logo.png";
     const oldPriceDisplay = p.old_price
-      ? `<del class="old-price">$${p.old_price}</del>`
+      ? `<del class="old-price">${p.old_price} دج</del>`
       : "";
 
     const sizesDisplay =
