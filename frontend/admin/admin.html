@@ -36,6 +36,17 @@
             <i id="theme-sun" class="fa-solid fa-sun hidden"></i>
             <i id="theme-moon" class="fa-solid fa-moon"></i>
           </button>
+          
+          <button
+            id="logout-btn"
+            onclick="logoutAdmin()"
+            class="btn-icon hidden"
+            style="color: #ef4444;"
+            title="تسجيل الخروج"
+          >
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+
           <a
             href="index.html"
             class="btn btn-primary"
@@ -69,7 +80,7 @@
           <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
           <div>
             <p class="stat-title">الربح الصافي</p>
-            <h3 id="stat-sales" class="stat-value">0دج</h3>
+            <h3 id="stat-sales" class="stat-value">0 دج</h3>
           </div>
         </div>
       </section>
@@ -259,6 +270,28 @@
 
           <button type="submit" class="btn btn-primary btn-full mt-1">
             حفظ المنتج
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Auth Modal (نافذة تسجيل الدخول) -->
+    <div id="auth-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 400px; text-align: center;">
+        <h3 class="mb-1">تسجيل الدخول للأدمن</h3>
+        <p class="text-subtle mb-1">يرجى إدخال الرمز السري للوصول للوحة التحكم</p>
+        
+        <form id="auth-form" onsubmit="handleLogin(event)">
+          <input
+            type="password"
+            id="admin-pass"
+            class="input"
+            placeholder="أدخل كلمة المرور"
+            required
+            style="margin-bottom: 15px; text-align: center; font-size: 1.1rem;"
+          />
+          <button type="submit" class="btn btn-primary btn-full">
+            دخول <i class="fa-solid fa-right-to-bracket"></i>
           </button>
         </form>
       </div>
