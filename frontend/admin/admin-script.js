@@ -469,8 +469,8 @@ async function renderAdminProducts() {
       <td><strong>${p.name}</strong><br><small class="text-subtle">${p.images ? p.images.length : 0} صور/ألوان</small></td>
       <td><span class="pill">${p.category || "غير محدد"}</span></td>
       <td>${sizesDisplay}</td>
-      <td><strong>$${p.price}</strong> ${oldPriceDisplay}</td>
-      <td><span class="profit-text">+$${calculatedProfit.toFixed(2)}</span></td>
+      <td><strong>${p.price} دج</strong> ${oldPriceDisplay}</td>
+      <td><span class="profit-text">+${calculatedProfit.toFixed(2)} دج</span></td>
       <td>
         <div class="action-btns">
           <button onclick="openEditProductModal(${p.id})" class="btn-icon" style="color: #3b82f6;" title="تعديل">
