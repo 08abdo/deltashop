@@ -26,7 +26,6 @@ function showToast(message, icon = "success") {
   });
 }
 
-// تحويل جميع استدعاءات alert الافتراضية إلى Toast أنيق
 window.alert = function (message) {
   let iconType = "info";
   if (
@@ -46,16 +45,6 @@ window.alert = function (message) {
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
   loadDashboardData();
-
-  const categoryForm = document.getElementById("category-form");
-  if (categoryForm) {
-    categoryForm.addEventListener("submit", handleSaveCategory);
-  }
-
-  const productForm = document.getElementById("product-form");
-  if (productForm) {
-    productForm.addEventListener("submit", handleSaveProduct);
-  }
 });
 
 // ---------------- Theme Management ----------------
@@ -213,6 +202,8 @@ async function fetchCategories() {
 
 async function handleSaveCategory(e) {
   e.preventDefault();
+  const form = e.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
   const input = document.getElementById("category-name-input");
   const name = input?.value.trim();
 
@@ -225,6 +216,8 @@ async function handleSaveCategory(e) {
     });
     return;
   }
+
+  if (submitBtn) submitBtn.disabled = true;
 
   try {
     const res = await fetch(`${API_URL}/categories`, {
@@ -247,7 +240,6 @@ async function handleSaveCategory(e) {
       await renderAdminCategories();
       populateCategoryDropdown();
     } else {
-      // إظهار الرسالة المخصصة بشكل أنيق بـ SweetAlert
       Swal.fire({
         icon: "error",
         title: "تعذر الإضافة",
@@ -263,8 +255,11 @@ async function handleSaveCategory(e) {
       text: "تعذر الاتصال بالسيرفر، تأكد من تشغيل الباك إند.",
       confirmButtonText: "حسناً",
     });
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
+
 async function deleteCategory(id) {
   const result = await Swal.fire({
     title: "تأكيد الحذف",
@@ -369,6 +364,9 @@ async function fetchOrders() {
 async function handleSaveProduct(e) {
   e.preventDefault();
 
+  const form = e.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
+
   const id = document.getElementById("product-id")?.value || "";
   const name =
     document.getElementById("product-name-input")?.value.trim() || "";
@@ -409,6 +407,8 @@ async function handleSaveProduct(e) {
   const url = id ? `${API_URL}/products/${id}` : `${API_URL}/products`;
   const method = id ? "PUT" : "POST";
 
+  if (submitBtn) submitBtn.disabled = true;
+
   try {
     const res = await fetch(url, {
       method,
@@ -432,6 +432,8 @@ async function handleSaveProduct(e) {
   } catch (err) {
     console.error("خطأ الاتصال بالسيرفر:", err);
     alert("تعذر الاتصال بالسيرفر");
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
