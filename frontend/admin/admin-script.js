@@ -1,5 +1,8 @@
 const API_URL = "/api";
 
+// 🔑 رمز الدخول الخاص بك (تقدر تبدلو هنا)
+const ADMIN_PASSWORD = "1234";
+
 let uploadedImages = [];
 let allProducts = [];
 let allCategories = [];
@@ -44,8 +47,55 @@ window.alert = function (message) {
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
-  loadDashboardData();
+  checkAuth();
 });
+
+// ---------------- Authorization ----------------
+function checkAuth() {
+  const isAuth = sessionStorage.getItem("admin_authenticated");
+  const authModal = document.getElementById("auth-modal");
+  const logoutBtn = document.getElementById("logout-btn");
+
+  if (isAuth === "true") {
+    if (authModal) authModal.classList.add("hidden");
+    if (logoutBtn) logoutBtn.classList.remove("hidden");
+    loadDashboardData();
+  } else {
+    if (authModal) authModal.classList.remove("hidden");
+    if (logoutBtn) logoutBtn.classList.add("hidden");
+  }
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const inputPass = document.getElementById("admin-pass")?.value;
+
+  if (inputPass === ADMIN_PASSWORD) {
+    sessionStorage.setItem("admin_authenticated", "true");
+    document.getElementById("auth-modal")?.classList.add("hidden");
+    document.getElementById("logout-btn")?.classList.remove("hidden");
+    showToast("تم تسجيل الدخول بنجاح", "success");
+    loadDashboardData();
+  } else {
+    Swal.fire({
+      icon: "error",
+      title: "رمز غير صحيح",
+      text: "كلمة المرور التي أدخلتها غير صحيحة!",
+      confirmButtonText: "حسناً",
+      background: document.documentElement.classList.contains("dark")
+        ? "#1e1b4b"
+        : "#ffffff",
+      color: document.documentElement.classList.contains("dark")
+        ? "#ffffff"
+        : "#1e1b4b",
+    });
+  }
+}
+
+function logoutAdmin() {
+  sessionStorage.removeItem("admin_authenticated");
+  location.reload();
+}
 
 // ---------------- Theme Management ----------------
 function initTheme() {
