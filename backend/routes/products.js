@@ -13,37 +13,74 @@ const invalidateCache = () => {
   lastCacheTime = 0;
 };
 
-// دالة مساعدة لضغط صور Base64 تلقائياً وتحويلها لـ WebP
+// دالة مساعدة لرفع صور Base64 إلى Supabase Storage وإرجاع روابط سريعة
 const processImages = async (imagesList) => {
   if (!Array.isArray(imagesList) || imagesList.length === 0) return [];
 
   const processedImages = await Promise.all(
     imagesList.map(async (img) => {
-      // ضغط الصورة فقط إذا كانت بصيغة Base64
-      if (typeof img === "string" && img.startsWith("data:image")) {
+      // التحقق مما إذا كانت الصورة كائن (Object) يحتوي على src و color أم نص عادي
+      let rawBase64 = "";
+      let colorTag = "";
+
+      if (typeof img === "object" && img !== null) {
+        rawBase64 = img.src || img.url || "";
+        colorTag = img.color || "";
+      } else if (typeof img === "string") {
+        rawBase64 = img;
+      }
+
+      // إذا كانت الصورة بصيغة Base64 قم بضغطها ورفعها إلى Supabase Storage Bucket
+      if (typeof rawBase64 === "string" && rawBase64.startsWith("data:image")) {
         try {
-          const parts = img.split(";base64,");
+          const parts = rawBase64.split(";base64,");
           const imageBuffer = Buffer.from(parts[1], "base64");
 
+          // 1. ضغط الصورة باستخدام Sharp بأسلوب متوافق مع كافة الشاشات
           const compressedBuffer = await sharp(imageBuffer)
             .resize({ width: 800, fit: "inside", withoutEnlargement: true })
             .webp({ quality: 80 })
             .toBuffer();
 
-          return `data:image/webp;base64,${compressedBuffer.toString("base64")}`;
+          // 2. اسم فريد للملف في Storage
+          const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(7)}.webp`;
+
+          // 3. رفع الصورة المباشرة لـ Supabase Storage (Bucket: products)
+          const { error: uploadError } = await supabase.storage
+            .from("products")
+            .upload(fileName, compressedBuffer, {
+              contentType: "image/webp",
+              upsert: true,
+            });
+
+          if (uploadError) throw uploadError;
+
+          // 4. استخراج الرابط المباشر للعموم (Public URL)
+          const { data: publicUrlData } = supabase.storage
+            .from("products")
+            .getPublicUrl(fileName);
+
+          const publicUrl = publicUrlData.publicUrl;
+
+          // إرجاع البنية حسب ما كانت عليه الكائنات الأصيلة
+          if (typeof img === "object" && img !== null) {
+            return { ...img, src: publicUrl };
+          }
+          return publicUrl;
         } catch (err) {
-          console.error("خطأ في ضغط الصورة:", err);
-          return img; // في حالة وجود خطأ، احفظ الصورة الأصلية
+          console.error("خطأ رفع الصورة لـ Storage:", err.message);
+          return img; // في حالة الخطأ احتفظ بالقيمة الأصلية
         }
       }
-      return img; // إذا كانت رابطاً عادياً اتركها كما هي
+
+      return img; // إذا كانت الصورة رابطاً جاهزاً اتركها كما هي
     })
   );
 
   return processedImages;
 };
 
-// 1. جلب المنتجات
+// 1. جلب المنتجات (GET)
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page);
@@ -98,7 +135,7 @@ router.post("/", async (req, res) => {
   const profit = parseFloat(price) - parseFloat(cost);
 
   try {
-    // ضغط الصور تلقائياً قبل الحفظ
+    // رفع وصغط الصور لـ Supabase Storage وتخزين الروابط فقط
     const optimizedImages = await processImages(images);
 
     const { data, error } = await supabase
@@ -135,7 +172,7 @@ router.put("/:id", async (req, res) => {
   const profit = parseFloat(price) - parseFloat(cost);
 
   try {
-    // ضغط الصور الجديدة تلقائياً عند التعديل
+    // رفع وضغط الصور لـ Supabase Storage وتخزين الروابط فقط
     const optimizedImages = await processImages(images);
 
     const { data, error } = await supabase
