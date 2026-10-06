@@ -1,33 +1,61 @@
 const express = require("express");
 const router = express.Router();
 const supabase = require("../supabase");
+const sharp = require("sharp");
 
 // ذاكرة تخزين مؤقت لسيرفر Node.js
 let productsCache = null;
 let lastCacheTime = 0;
-const CACHE_DURATION = 3 * 60 * 1000; // حفظ المنتجات في الكاش لمدة 3 دقائق
+const CACHE_DURATION = 3 * 60 * 1000;
 
-// دالة تفريغ الكاش عند التعديل/الإضافة/الحذف
 const invalidateCache = () => {
   productsCache = null;
   lastCacheTime = 0;
 };
 
-// 1. جلب المنتجات (محسّن وسريع جداً)
+// دالة مساعدة لضغط صور Base64 تلقائياً وتحويلها لـ WebP
+const processImages = async (imagesList) => {
+  if (!Array.isArray(imagesList) || imagesList.length === 0) return [];
+
+  const processedImages = await Promise.all(
+    imagesList.map(async (img) => {
+      // ضغط الصورة فقط إذا كانت بصيغة Base64
+      if (typeof img === "string" && img.startsWith("data:image")) {
+        try {
+          const parts = img.split(";base64,");
+          const imageBuffer = Buffer.from(parts[1], "base64");
+
+          const compressedBuffer = await sharp(imageBuffer)
+            .resize({ width: 800, fit: "inside", withoutEnlargement: true })
+            .webp({ quality: 80 })
+            .toBuffer();
+
+          return `data:image/webp;base64,${compressedBuffer.toString("base64")}`;
+        } catch (err) {
+          console.error("خطأ في ضغط الصورة:", err);
+          return img; // في حالة وجود خطأ، احفظ الصورة الأصلية
+        }
+      }
+      return img; // إذا كانت رابطاً عادياً اتركها كما هي
+    })
+  );
+
+  return processedImages;
+};
+
+// 1. جلب المنتجات
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
-    const full = req.query.full === "true"; // للأدمن إذا كان يحتاج التفاصيل الكاملة
+    const full = req.query.full === "true";
     const now = Date.now();
 
-    // استخدام الكاش إذا لم يتم طلب صفحة معينة ولم تكن طلباً كاملاً للأدمن
     if (!page && !limit && !full && productsCache && (now - lastCacheTime < CACHE_DURATION)) {
       res.setHeader("X-Cache", "HIT");
       return res.json(productsCache);
     }
 
-    // تحديد الحقول المطلوب جلبها لتسريع النقل (تجاهل الوصف الثقيل في القائمة)
     const selectFields = full
       ? "*"
       : "id, name, category, price, old_price, images, sizes, created_at";
@@ -37,7 +65,6 @@ router.get("/", async (req, res) => {
       .select(selectFields)
       .order("created_at", { ascending: false });
 
-    // تفعيل الـ Pagination إذا تم تمرير page و limit
     if (page && limit) {
       const from = (page - 1) * limit;
       const to = from + limit - 1;
@@ -48,7 +75,6 @@ router.get("/", async (req, res) => {
 
     if (error) throw error;
 
-    // حفظ النتيجة في الكاش للطلبات العامة
     if (!page && !limit && !full) {
       productsCache = data;
       lastCacheTime = now;
@@ -72,6 +98,9 @@ router.post("/", async (req, res) => {
   const profit = parseFloat(price) - parseFloat(cost);
 
   try {
+    // ضغط الصور تلقائياً قبل الحفظ
+    const optimizedImages = await processImages(images);
+
     const { data, error } = await supabase
       .from("products")
       .insert([
@@ -83,7 +112,7 @@ router.post("/", async (req, res) => {
           cost,
           profit,
           sizes: sizes || [],
-          images: images || [],
+          images: optimizedImages,
           desc_text,
         },
       ])
@@ -91,7 +120,7 @@ router.post("/", async (req, res) => {
 
     if (error) throw error;
 
-    invalidateCache(); // تفريغ الكاش لتحديث القائمة فوراً
+    invalidateCache();
     res.status(201).json(data[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -106,6 +135,9 @@ router.put("/:id", async (req, res) => {
   const profit = parseFloat(price) - parseFloat(cost);
 
   try {
+    // ضغط الصور الجديدة تلقائياً عند التعديل
+    const optimizedImages = await processImages(images);
+
     const { data, error } = await supabase
       .from("products")
       .update({
@@ -116,7 +148,7 @@ router.put("/:id", async (req, res) => {
         cost,
         profit,
         sizes: sizes || [],
-        images: images || [],
+        images: optimizedImages,
         desc_text,
       })
       .eq("id", id)
@@ -128,7 +160,7 @@ router.put("/:id", async (req, res) => {
       return res.status(404).json({ error: "المنتج غير موجود" });
     }
 
-    invalidateCache(); // تفريغ الكاش لتحديث البيانات فوراً
+    invalidateCache();
     res.json(data[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -144,7 +176,7 @@ router.delete("/:id", async (req, res) => {
 
     if (error) throw error;
 
-    invalidateCache(); // تفريغ الكاش
+    invalidateCache();
     res.json({ message: "تم حذف المنتج بنجاح" });
   } catch (err) {
     res.status(500).json({ error: err.message });
