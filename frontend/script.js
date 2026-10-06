@@ -143,6 +143,16 @@ function filterCategory(catName) {
 
 // ---------------- Fetch Products API ----------------
 async function fetchProductsFromApi() {
+  const container = document.getElementById("products-grid");
+  if (container) {
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 3rem 0;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; color: #4f46e5;"></i>
+        <p style="margin-top: 1rem; color: #6b7280;">جاري تحميل المنتجات...</p>
+      </div>
+    `;
+  }
+
   try {
     const res = await fetch(`${API_URL}/products`);
     if (!res.ok) throw new Error("فشل الاتصال بالسيرفر");
