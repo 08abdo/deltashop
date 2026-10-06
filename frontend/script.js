@@ -30,7 +30,7 @@ function showToast(message, icon = "success") {
   });
 }
 
-// تحويل جميع استدعاءات alert الافتراضية إلى Toast أنيق
+// تحويل استدعاءات alert الإفتراضية إلى Toast
 window.alert = function (message) {
   let iconType = "info";
   if (
@@ -155,6 +155,14 @@ async function fetchProductsFromApi() {
   }
 }
 
+// دالة مساعدة لمعالجة رابط الصورة سواء كانت نص أو كائن
+function getProductMainImage(product) {
+  if (!product.images || product.images.length === 0) return "image/logo.png";
+  const imgObj = product.images[0];
+  if (typeof imgObj === "string") return imgObj;
+  return imgObj.src || imgObj.url || "image/logo.png";
+}
+
 function renderProducts(items) {
   const container = document.getElementById("products-grid");
   const countEl = document.getElementById("product-count");
@@ -170,10 +178,7 @@ function renderProducts(items) {
   }
 
   items.forEach((product) => {
-    const mainImg =
-      product.images && product.images.length > 0
-        ? product.images[0].src
-        : "image/logo.png";
+    const mainImg = getProductMainImage(product);
     const title = product.name || "منتج بدون اسم";
     const desc = product.desc_text || product.description || "";
     const oldPriceDisplay = product.old_price
@@ -183,8 +188,8 @@ function renderProducts(items) {
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <div class="card-img-wrapper" onclick="openProductModal(${product.id})">
-        <img src="${mainImg}" alt="${title}" class="product-img" loading="lazy">
+      <div class="card-img-wrapper" onclick="openProductModal('${product.id}')">
+        <img src="${mainImg}" alt="${title}" class="product-img" loading="lazy" decoding="async">
       </div>
       <div class="product-body">
         <div>
@@ -197,10 +202,10 @@ function renderProducts(items) {
             ${oldPriceDisplay}
           </div>
           <div class="card-actions">
-            <button onclick="addToCart(${product.id})" class="btn-icon" title="أضف للسلة">
+            <button onclick="addToCart('${product.id}')" class="btn-icon" title="أضف للسلة">
               <i class="fa-solid fa-cart-plus"></i>
             </button>
-            <button onclick="openProductModal(${product.id})" class="btn btn-primary">
+            <button onclick="openProductModal('${product.id}')" class="btn btn-primary">
               طلب
             </button>
           </div>
@@ -213,15 +218,14 @@ function renderProducts(items) {
 
 // ---------------- Modal & Order ----------------
 function openProductModal(id) {
-  const p = products.find((x) => x.id === id);
+  const p = products.find((x) => String(x.id) === String(id));
   if (!p) return;
 
   activeSelectedProduct = p;
   activeSelectedColor = "";
   activeSelectedSize = "";
 
-  const mainImg =
-    p.images && p.images.length > 0 ? p.images[0].src : "image/logo.png";
+  const mainImg = getProductMainImage(p);
 
   document.getElementById("modal-title").textContent = p.name;
   document.getElementById("modal-desc").textContent =
@@ -234,8 +238,9 @@ function openProductModal(id) {
   colorContainer.innerHTML = "";
 
   const availableColors = (p.images || []).filter(
-    (img) => img.color && img.color.trim() !== "",
+    (img) => typeof img === "object" && img.color && img.color.trim() !== "",
   );
+
   if (availableColors.length > 0) {
     colorWrapper.classList.remove("hidden");
     availableColors.forEach((imgObj, idx) => {
@@ -348,16 +353,19 @@ function toggleCartModal() {
 }
 
 function addToCart(id) {
-  const p = products.find((x) => x.id === id);
+  const p = products.find((x) => String(x.id) === String(id));
   if (!p) return;
 
+  const mainImg = getProductMainImage(p);
   const defaultColor =
-    p.images && p.images.length > 0 ? p.images[0].color : "افتراضي";
+    p.images && p.images.length > 0 && typeof p.images[0] === "object"
+      ? p.images[0].color
+      : "افتراضي";
   const defaultSize = p.sizes && p.sizes.length > 0 ? p.sizes[0] : "";
 
   const existing = cart.find(
     (item) =>
-      item.id === id &&
+      String(item.id) === String(id) &&
       item.color === defaultColor &&
       item.size === defaultSize,
   );
@@ -369,7 +377,7 @@ function addToCart(id) {
       id: p.id,
       name: p.name,
       price: parseFloat(p.price) || 0,
-      img: p.images && p.images.length > 0 ? p.images[0].src : "image/logo.png",
+      img: mainImg,
       color: defaultColor,
       size: defaultSize,
       qty: 1,
@@ -413,7 +421,7 @@ function updateCartUI() {
       return `
     <div class="cart-item">
       <div class="cart-item-info">
-        <img src="${item.img}" class="cart-item-img">
+        <img src="${item.img}" class="cart-item-img" loading="lazy">
         <div>
           <strong class="cart-item-name">${item.name}</strong>
           <br><small class="text-subtle">${item.price} دج × ${item.qty}${sizeText}</small>
