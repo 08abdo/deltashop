@@ -188,12 +188,6 @@ function openAddProductModal() {
   if (prodId) prodId.value = "";
   if (form) form.reset();
 
-  const availCheckbox = document.getElementById("product-available-input");
-  if (availCheckbox) {
-    availCheckbox.checked = true;
-    toggleAvailabilityText(availCheckbox);
-  }
-
   uploadedImages = [];
   renderImagePreviews();
   populateCategoryDropdown();
@@ -235,12 +229,6 @@ function openEditProductModal(id) {
   }
 
   if (prodDesc) prodDesc.value = p.desc_text || p.description || "";
-
-  const availCheckbox = document.getElementById("product-available-input");
-  if (availCheckbox) {
-    availCheckbox.checked = p.is_available !== false; 
-    toggleAvailabilityText(availCheckbox);
-  }
 
   uploadedImages = p.images ? JSON.parse(JSON.stringify(p.images)) : [];
   renderImagePreviews();
@@ -443,7 +431,6 @@ async function handleSaveProduct(e) {
     document.getElementById("product-category-input")?.value.trim() || "";
   const desc =
     document.getElementById("product-desc-input")?.value.trim() || "";
-  const isAvailable = document.getElementById("product-available-input")?.checked ?? true;
 
   const rawSizes = document.getElementById("product-sizes-input")?.value || "";
   const sizes = rawSizes
@@ -460,7 +447,6 @@ async function handleSaveProduct(e) {
     cost,
     category,
     sizes,
-    is_available: isAvailable,
     images:
       uploadedImages.length > 0
         ? uploadedImages
@@ -681,16 +667,4 @@ async function loadDashboardData() {
   await renderAdminProducts();
   await renderAdminOrders();
   await updateStats();
-}
-
-// ---------------- تغيير نص حالة المنتج ----------------
-function toggleAvailabilityText(checkbox) {
-  const textSpan = document.getElementById('availability-text');
-  if (checkbox.checked) {
-    textSpan.textContent = "متوفر في المخزون";
-    textSpan.style.color = "#22c55e"; // أخضر
-  } else {
-    textSpan.textContent = "غير متوفر (نفذت الكمية)";
-    textSpan.style.color = "#ef4444"; // أحمر
-  }
 }
