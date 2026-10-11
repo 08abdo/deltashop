@@ -232,4 +232,71 @@
 
           <!-- مدخل المقاسات -->
           <input
-            type="
+            type="text"
+            id="product-sizes-input"
+            placeholder="المقاسات المتاحة (افصل بينها بفاصلة، مثل: S, M, L, XL)"
+            class="input"
+          />
+
+          <!-- رفع عدة صور -->
+          <div class="file-input-group mb-1">
+            <label
+              for="product-images-input"
+              class="btn btn-icon btn-full upload-label"
+            >
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span>اختر صور المنتج من الهاتف</span>
+            </label>
+
+            <input
+              type="file"
+              id="product-images-input"
+              accept="image/*"
+              multiple
+              onchange="previewSelectedImages(event)"
+              style="display: none"
+            />
+          </div>
+
+          <div id="images-preview-container" class="images-preview-grid"></div>
+
+          <textarea
+            id="product-desc-input"
+            placeholder="وصف المنتج"
+            class="input mt-1"
+            rows="3"
+            style="resize: none"
+          ></textarea>
+
+          <button type="submit" class="btn btn-primary btn-full mt-1">
+            حفظ المنتج
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Auth Modal (نافذة تسجيل الدخول) -->
+    <div id="auth-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 400px; text-align: center;">
+        <h3 class="mb-1">تسجيل الدخول للأدمن</h3>
+        <p class="text-subtle mb-1">يرجى إدخال الرمز السري للوصول للوحة التحكم</p>
+        
+        <form id="auth-form" onsubmit="handleLogin(event)">
+          <input
+            type="password"
+            id="admin-pass"
+            class="input"
+            placeholder="أدخل كلمة المرور"
+            required
+            style="margin-bottom: 15px; text-align: center; font-size: 1.1rem;"
+          />
+          <button type="submit" class="btn btn-primary btn-full">
+            دخول <i class="fa-solid fa-right-to-bracket"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="admin-script.js"></script>
+  </body>
+</html>
