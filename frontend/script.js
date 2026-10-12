@@ -491,7 +491,7 @@ async function checkoutCart() {
     });
 
     if (res.ok) {
-      alert("شكراً لك! تم إرسال الطلب بنجاح.");
+      alert("شكراً لك! تم إرسال الطلب بنجاح سيتم تأكيد الطلب عن قريب عبر الواتساب.");
       cart = [];
       updateCartUI();
       toggleCartModal();
