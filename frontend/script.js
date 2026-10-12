@@ -343,7 +343,7 @@ async function submitDirectOrder() {
     });
 
     if (res.ok) {
-      alert(`شكراً لك ${name}، تم إرسال طلبك بنجاح!`);
+      alert(`شكراً لك ${name}، تم إرسال طلبك بنجاح! سيتم تأكيد الطلب عن قريب عبر الواتساب`);
       closeProductModal();
       document.getElementById("order-name").value = "";
       document.getElementById("order-phone").value = "";
