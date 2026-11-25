@@ -19,7 +19,7 @@
       <div class="header-container">
         <div class="brand-area">
           <div class="logo-box">
-            <img src="frontend/image/logo.png" alt="Logo" class="site-logo" />
+            <img src="image/logo.png" alt="Logo" class="site-logo" />
           </div>
           <div>
             <span class="brand-title">Delta Shop</span>
@@ -36,19 +36,8 @@
             <i id="theme-sun" class="fa-solid fa-sun hidden"></i>
             <i id="theme-moon" class="fa-solid fa-moon"></i>
           </button>
-          
-          <button
-            id="logout-btn"
-            onclick="logoutAdmin()"
-            class="btn-icon hidden"
-            style="color: #ef4444;"
-            title="تسجيل الخروج"
-          >
-            <i class="fa-solid fa-right-from-bracket"></i>
-          </button>
-
           <a
-            href="https://deltashop.duckdns.org/"
+            href="index.html"
             class="btn btn-primary"
             style="text-decoration: none"
           >
@@ -80,7 +69,7 @@
           <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
           <div>
             <p class="stat-title">الربح الصافي</p>
-            <h3 id="stat-sales" class="stat-value">0 دج</h3>
+            <h3 id="stat-sales" class="stat-value">$0.00</h3>
           </div>
         </div>
       </section>
@@ -209,18 +198,18 @@
             />
             <input
               type="number"
-              step="1"
+              step="0.01"
               id="product-old-price-input"
-              placeholder="السعر قبل الخصم (دج)"
+              placeholder="السعر قبل الخصم ($)"
               class="input"
             />
           </div>
 
           <input
             type="number"
-            step="1"
+            step="0.01"
             id="product-cost-input"
-            placeholder="سعر التكلفة عليّ (دج) - لحساب الربح"
+            placeholder="سعر التكلفة عليّ ($) - لحساب الربح"
             class="input"
             required
           />
@@ -270,28 +259,6 @@
 
           <button type="submit" class="btn btn-primary btn-full mt-1">
             حفظ المنتج
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- Auth Modal (نافذة تسجيل الدخول) -->
-    <div id="auth-modal" class="modal-overlay">
-      <div class="modal-card" style="max-width: 400px; text-align: center;">
-        <h3 class="mb-1">تسجيل الدخول للأدمن</h3>
-        <p class="text-subtle mb-1">يرجى إدخال الرمز السري للوصول للوحة التحكم</p>
-        
-        <form id="auth-form" onsubmit="handleLogin(event)">
-          <input
-            type="password"
-            id="admin-pass"
-            class="input"
-            placeholder="أدخل كلمة المرور"
-            required
-            style="margin-bottom: 15px; text-align: center; font-size: 1.1rem;"
-          />
-          <button type="submit" class="btn btn-primary btn-full">
-            دخول <i class="fa-solid fa-right-to-bracket"></i>
           </button>
         </form>
       </div>

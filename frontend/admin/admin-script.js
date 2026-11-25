@@ -1,7 +1,4 @@
-const API_URL = "/api";
-
-// 🔑 رمز الدخول الخاص بك (تقدر تبدلو هنا)
-const ADMIN_PASSWORD = "oubaid040808oubaid";
+const API_URL = "http://localhost:5000/api";
 
 let uploadedImages = [];
 let allProducts = [];
@@ -29,6 +26,7 @@ function showToast(message, icon = "success") {
   });
 }
 
+// تحويل جميع استدعاءات alert الافتراضية إلى Toast أنيق
 window.alert = function (message) {
   let iconType = "info";
   if (
@@ -47,55 +45,18 @@ window.alert = function (message) {
 
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
-  checkAuth();
+  loadDashboardData();
+
+  const categoryForm = document.getElementById("category-form");
+  if (categoryForm) {
+    categoryForm.addEventListener("submit", handleSaveCategory);
+  }
+
+  const productForm = document.getElementById("product-form");
+  if (productForm) {
+    productForm.addEventListener("submit", handleSaveProduct);
+  }
 });
-
-// ---------------- Authorization ----------------
-function checkAuth() {
-  const isAuth = sessionStorage.getItem("admin_authenticated");
-  const authModal = document.getElementById("auth-modal");
-  const logoutBtn = document.getElementById("logout-btn");
-
-  if (isAuth === "true") {
-    if (authModal) authModal.classList.add("hidden");
-    if (logoutBtn) logoutBtn.classList.remove("hidden");
-    loadDashboardData();
-  } else {
-    if (authModal) authModal.classList.remove("hidden");
-    if (logoutBtn) logoutBtn.classList.add("hidden");
-  }
-}
-
-function handleLogin(e) {
-  e.preventDefault();
-  const inputPass = document.getElementById("admin-pass")?.value;
-
-  if (inputPass === ADMIN_PASSWORD) {
-    sessionStorage.setItem("admin_authenticated", "true");
-    document.getElementById("auth-modal")?.classList.add("hidden");
-    document.getElementById("logout-btn")?.classList.remove("hidden");
-    showToast("تم تسجيل الدخول بنجاح", "success");
-    loadDashboardData();
-  } else {
-    Swal.fire({
-      icon: "error",
-      title: "رمز غير صحيح",
-      text: "كلمة المرور التي أدخلتها غير صحيحة!",
-      confirmButtonText: "حسناً",
-      background: document.documentElement.classList.contains("dark")
-        ? "#1e1b4b"
-        : "#ffffff",
-      color: document.documentElement.classList.contains("dark")
-        ? "#ffffff"
-        : "#1e1b4b",
-    });
-  }
-}
-
-function logoutAdmin() {
-  sessionStorage.removeItem("admin_authenticated");
-  location.reload();
-}
 
 // ---------------- Theme Management ----------------
 function initTheme() {
@@ -252,8 +213,6 @@ async function fetchCategories() {
 
 async function handleSaveCategory(e) {
   e.preventDefault();
-  const form = e.target;
-  const submitBtn = form.querySelector('button[type="submit"]');
   const input = document.getElementById("category-name-input");
   const name = input?.value.trim();
 
@@ -266,8 +225,6 @@ async function handleSaveCategory(e) {
     });
     return;
   }
-
-  if (submitBtn) submitBtn.disabled = true;
 
   try {
     const res = await fetch(`${API_URL}/categories`, {
@@ -290,6 +247,7 @@ async function handleSaveCategory(e) {
       await renderAdminCategories();
       populateCategoryDropdown();
     } else {
+      // إظهار الرسالة المخصصة بشكل أنيق بـ SweetAlert
       Swal.fire({
         icon: "error",
         title: "تعذر الإضافة",
@@ -305,11 +263,8 @@ async function handleSaveCategory(e) {
       text: "تعذر الاتصال بالسيرفر، تأكد من تشغيل الباك إند.",
       confirmButtonText: "حسناً",
     });
-  } finally {
-    if (submitBtn) submitBtn.disabled = false;
   }
 }
-
 async function deleteCategory(id) {
   const result = await Swal.fire({
     title: "تأكيد الحذف",
@@ -414,9 +369,6 @@ async function fetchOrders() {
 async function handleSaveProduct(e) {
   e.preventDefault();
 
-  const form = e.target;
-  const submitBtn = form.querySelector('button[type="submit"]');
-
   const id = document.getElementById("product-id")?.value || "";
   const name =
     document.getElementById("product-name-input")?.value.trim() || "";
@@ -457,8 +409,6 @@ async function handleSaveProduct(e) {
   const url = id ? `${API_URL}/products/${id}` : `${API_URL}/products`;
   const method = id ? "PUT" : "POST";
 
-  if (submitBtn) submitBtn.disabled = true;
-
   try {
     const res = await fetch(url, {
       method,
@@ -482,8 +432,6 @@ async function handleSaveProduct(e) {
   } catch (err) {
     console.error("خطأ الاتصال بالسيرفر:", err);
     alert("تعذر الاتصال بالسيرفر");
-  } finally {
-    if (submitBtn) submitBtn.disabled = false;
   }
 }
 
@@ -502,7 +450,7 @@ async function renderAdminProducts() {
     const mainImg =
       p.images && p.images.length > 0 ? p.images[0].src : "image/logo.png";
     const oldPriceDisplay = p.old_price
-      ? `<del class="old-price">${p.old_price} دج</del>`
+      ? `<del class="old-price">$${p.old_price}</del>`
       : "";
 
     const sizesDisplay =
@@ -519,8 +467,8 @@ async function renderAdminProducts() {
       <td><strong>${p.name}</strong><br><small class="text-subtle">${p.images ? p.images.length : 0} صور/ألوان</small></td>
       <td><span class="pill">${p.category || "غير محدد"}</span></td>
       <td>${sizesDisplay}</td>
-      <td><strong>${p.price} دج</strong> ${oldPriceDisplay}</td>
-      <td><span class="profit-text">+${calculatedProfit.toFixed(2)} دج</span></td>
+      <td><strong>$${p.price}</strong> ${oldPriceDisplay}</td>
+      <td><span class="profit-text">+$${calculatedProfit.toFixed(2)}</span></td>
       <td>
         <div class="action-btns">
           <button onclick="openEditProductModal(${p.id})" class="btn-icon" style="color: #3b82f6;" title="تعديل">
@@ -574,7 +522,7 @@ async function renderAdminOrders() {
       <td>${o.customer_name || o.customer || ""}</td>
       <td>${o.phone || ""}</td>
       <td>${o.address || ""}</td>
-      <td><strong>${o.total || 0} دج</strong></td>
+      <td><strong>$${o.total || 0}</strong></td>
       <td><span class="status-badge ${statusClass}">${o.status || "قيد الانتظار"}</span></td>
       <td>
         <div class="action-btns">
@@ -659,7 +607,7 @@ async function updateStats() {
     return acc + (profit || 0);
   }, 0);
 
-  if (statSales) statSales.innerText = `${totalProfit.toFixed(2)} دج`;
+  if (statSales) statSales.innerText = `$${totalProfit.toFixed(2)}`;
 }
 
 async function loadDashboardData() {

@@ -1,4 +1,4 @@
-const API_URL = "/api";
+const API_URL = "http://localhost:5000/api";
 
 let currentCategory = "all";
 let categoriesList = [];
@@ -30,7 +30,7 @@ function showToast(message, icon = "success") {
   });
 }
 
-// تحويل استدعاءات alert الإفتراضية إلى Toast
+// تحويل جميع استدعاءات alert الافتراضية إلى Toast أنيق
 window.alert = function (message) {
   let iconType = "info";
   if (
@@ -143,16 +143,6 @@ function filterCategory(catName) {
 
 // ---------------- Fetch Products API ----------------
 async function fetchProductsFromApi() {
-  const container = document.getElementById("products-grid");
-  if (container) {
-    container.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; padding: 3rem 0;">
-        <i class="fa-solid fa-spinner fa-spin" style="font-size: 2.5rem; color: #4f46e5;"></i>
-        <p style="margin-top: 1rem; color: #6b7280;">جاري تحميل المنتجات...</p>
-      </div>
-    `;
-  }
-
   try {
     const res = await fetch(`${API_URL}/products`);
     if (!res.ok) throw new Error("فشل الاتصال بالسيرفر");
@@ -163,14 +153,6 @@ async function fetchProductsFromApi() {
     console.error("خطأ جلب المنتجات:", err);
     renderProducts([]);
   }
-}
-
-// دالة مساعدة لمعالجة رابط الصورة سواء كانت نص أو كائن
-function getProductMainImage(product) {
-  if (!product.images || product.images.length === 0) return "image/logo.png";
-  const imgObj = product.images[0];
-  if (typeof imgObj === "string") return imgObj;
-  return imgObj.src || imgObj.url || "image/logo.png";
 }
 
 function renderProducts(items) {
@@ -188,18 +170,21 @@ function renderProducts(items) {
   }
 
   items.forEach((product) => {
-    const mainImg = getProductMainImage(product);
+    const mainImg =
+      product.images && product.images.length > 0
+        ? product.images[0].src
+        : "image/logo.png";
     const title = product.name || "منتج بدون اسم";
     const desc = product.desc_text || product.description || "";
     const oldPriceDisplay = product.old_price
-      ? `<del class="old-price">${product.old_price} دج</del>`
+      ? `<del class="old-price">$${product.old_price}</del>`
       : "";
 
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
-      <div class="card-img-wrapper" onclick="openProductModal('${product.id}')">
-        <img src="${mainImg}" alt="${title}" class="product-img" loading="lazy" decoding="async">
+      <div class="card-img-wrapper" onclick="openProductModal(${product.id})">
+        <img src="${mainImg}" alt="${title}" class="product-img" loading="lazy">
       </div>
       <div class="product-body">
         <div>
@@ -208,14 +193,14 @@ function renderProducts(items) {
         </div>
         <div class="card-footer-row">
           <div class="price-container">
-            <span class="price-tag">${product.price} دج</span>
+            <span class="price-tag">$${product.price}</span>
             ${oldPriceDisplay}
           </div>
           <div class="card-actions">
-            <button onclick="addToCart('${product.id}')" class="btn-icon" title="أضف للسلة">
+            <button onclick="addToCart(${product.id})" class="btn-icon" title="أضف للسلة">
               <i class="fa-solid fa-cart-plus"></i>
             </button>
-            <button onclick="openProductModal('${product.id}')" class="btn btn-primary">
+            <button onclick="openProductModal(${product.id})" class="btn btn-primary">
               طلب
             </button>
           </div>
@@ -228,19 +213,20 @@ function renderProducts(items) {
 
 // ---------------- Modal & Order ----------------
 function openProductModal(id) {
-  const p = products.find((x) => String(x.id) === String(id));
+  const p = products.find((x) => x.id === id);
   if (!p) return;
 
   activeSelectedProduct = p;
   activeSelectedColor = "";
   activeSelectedSize = "";
 
-  const mainImg = getProductMainImage(p);
+  const mainImg =
+    p.images && p.images.length > 0 ? p.images[0].src : "image/logo.png";
 
   document.getElementById("modal-title").textContent = p.name;
   document.getElementById("modal-desc").textContent =
     p.desc_text || p.description || "";
-  document.getElementById("modal-price").textContent = `${p.price} دج`;
+  document.getElementById("modal-price").textContent = `$${p.price}`;
   document.getElementById("modal-img").src = mainImg;
 
   const colorWrapper = document.getElementById("colors-wrapper");
@@ -248,9 +234,8 @@ function openProductModal(id) {
   colorContainer.innerHTML = "";
 
   const availableColors = (p.images || []).filter(
-    (img) => typeof img === "object" && img.color && img.color.trim() !== "",
+    (img) => img.color && img.color.trim() !== "",
   );
-
   if (availableColors.length > 0) {
     colorWrapper.classList.remove("hidden");
     availableColors.forEach((imgObj, idx) => {
@@ -343,7 +328,7 @@ async function submitDirectOrder() {
     });
 
     if (res.ok) {
-      alert(`شكراً لك ${name}، تم إرسال طلبك بنجاح! سيتم تأكيد الطلب عن قريب عبر الواتساب`);
+      alert(`شكراً لك ${name}، تم إرسال طلبك بنجاح!`);
       closeProductModal();
       document.getElementById("order-name").value = "";
       document.getElementById("order-phone").value = "";
@@ -363,19 +348,16 @@ function toggleCartModal() {
 }
 
 function addToCart(id) {
-  const p = products.find((x) => String(x.id) === String(id));
+  const p = products.find((x) => x.id === id);
   if (!p) return;
 
-  const mainImg = getProductMainImage(p);
   const defaultColor =
-    p.images && p.images.length > 0 && typeof p.images[0] === "object"
-      ? p.images[0].color
-      : "افتراضي";
+    p.images && p.images.length > 0 ? p.images[0].color : "افتراضي";
   const defaultSize = p.sizes && p.sizes.length > 0 ? p.sizes[0] : "";
 
   const existing = cart.find(
     (item) =>
-      String(item.id) === String(id) &&
+      item.id === id &&
       item.color === defaultColor &&
       item.size === defaultSize,
   );
@@ -387,7 +369,7 @@ function addToCart(id) {
       id: p.id,
       name: p.name,
       price: parseFloat(p.price) || 0,
-      img: mainImg,
+      img: p.images && p.images.length > 0 ? p.images[0].src : "image/logo.png",
       color: defaultColor,
       size: defaultSize,
       qty: 1,
@@ -412,7 +394,7 @@ function updateCartUI() {
   }
 
   if (cartTotalEl) {
-    cartTotalEl.innerText = `${totalPrice.toFixed(2)} دج`;
+    cartTotalEl.innerText = `$${totalPrice.toFixed(2)}`;
   }
 
   if (cart.length === 0) {
@@ -431,10 +413,10 @@ function updateCartUI() {
       return `
     <div class="cart-item">
       <div class="cart-item-info">
-        <img src="${item.img}" class="cart-item-img" loading="lazy">
+        <img src="${item.img}" class="cart-item-img">
         <div>
           <strong class="cart-item-name">${item.name}</strong>
-          <br><small class="text-subtle">${item.price} دج × ${item.qty}${sizeText}</small>
+          <br><small class="text-subtle">$${item.price} × ${item.qty}${sizeText}</small>
         </div>
       </div>
       <button onclick="removeFromCart(${idx})" class="btn-icon delete-btn" title="حذف">
@@ -491,7 +473,7 @@ async function checkoutCart() {
     });
 
     if (res.ok) {
-      alert("شكراً لك! تم إرسال الطلب بنجاح سيتم تأكيد الطلب عن قريب عبر الواتساب.");
+      alert("شكراً لك! تم إرسال الطلب بنجاح.");
       cart = [];
       updateCartUI();
       toggleCartModal();
