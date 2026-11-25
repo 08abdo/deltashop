@@ -24,7 +24,7 @@ app.use("/api/categories", categoriesRoutes);
 
 // توجيه الصفحة الرئيسية (صلحتلك المسار باش يقرأ ملف index.html مباشرة)
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
 const PORT = process.env.PORT || 5000;
