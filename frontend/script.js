@@ -1,4 +1,4 @@
-const API_URL = "https://deltashop-api.onrender.com/api";
+const API_URL = "/api";
 
 let currentCategory = "all";
 let categoriesList = [];
